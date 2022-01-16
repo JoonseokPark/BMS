@@ -1,5 +1,7 @@
 package gui;
 
+import uart.*;
+
 public class Main {
     public static void main(String[] args) {
     	DataBase dataBase = new DataBase();
@@ -10,9 +12,15 @@ public class Main {
         mainPanel.setDataBase(dataBase);
         mainFrame.setMainPanel(mainPanel);
         mainFrame.setResizable(false);
-
+        
+        try {
+            (new Serial()).connect("COM11");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         while(true) {
-            mainFrame.sleep(1);
+        	mainFrame.sleep(1);
         }
 
 //        try {
