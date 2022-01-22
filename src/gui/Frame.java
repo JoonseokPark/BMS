@@ -14,51 +14,60 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.util.concurrent.TimeUnit;
 
-public class Frame extends JFrame implements BasicElements{
-	final static int borderThick = 6;
+public class Frame extends JFrame implements BasicElements {
+	public Frame() {
+		setSize(1020, 600);
+		this.setVisible(true);
+	}
 
-    public Frame() {
-        setSize(1020, 600);
-    	this.setVisible(true);
-    }
-
-    public void paint(Graphics g) {
-        super.paint(g);
-        getContentPane().setBackground(background);
-    }
-    
-	public static void drawGauge(Graphics g, int percent) {
-		int angle = (percent * 360) / 100;
-//		int angle = (percent * 360) / 100;
-		g.setColor(new Color(51, 255, 163));
-		g.fillArc(50, 80, 220, 220, 90, angle);;
-		g.setColor(new Color(28, 29, 73));
-		g.fillOval(50 + borderThick, 80 + borderThick, 220 - 2 * borderThick, 220 - 2 * borderThick);
+	public void paint(Graphics g) {
+		super.paint(g);
+		getContentPane().setBackground(background);
 	}
 }
- 
 
-class TestFrame extends Frame {
+class TestFrame extends Frame implements Runnable{
+	GraphPanel testPanel;
+	TestPanel testPanel2;
+
 	public TestFrame() {
 		JPanel pn = new JPanel();
 		this.setLocation(0, 350);
-		GraphPanel testPanel = new GraphPanel();
-		GaugePanel testPanel2 = new GaugePanel();
-//		this.add(new GraphPanel());
-		
-        BorderLayout fl = new BorderLayout();
+		(new Thread(this.testPanel2 = new TestPanel())).start();
+		this.testPanel = new GraphPanel();
+//		this.testPanel2 = new TestPanel();
+		this.setSize(1120, 600);
+
+		BorderLayout fl = new BorderLayout();
 //        pn.setLayout(null);
-        pn.setLayout(fl);
+		pn.setLayout(fl);
 //        testPanel.setBounds(300, 0, 720, 600);
 //        testPanel2.setBounds(0, 0, 300, 600);
-        pn.add(testPanel, BorderLayout.CENTER);
-        pn.add(testPanel2, BorderLayout.WEST);
-        this.add(pn);
+		pn.add(testPanel, BorderLayout.CENTER);
+		pn.add(testPanel2, BorderLayout.WEST);
+		this.add(pn);
 //        this.setContentPane(testPanel);
-//        FlowLayout fl2 = new FlowLayout();
-//        fl2.setAlignment(FlowLayout.RIGHT);
-//        testPanel2.setLayout(fl2);
 //        this.setContentPane(testPanel2);
+		boolean tempbool = true;
+	}
+	
+	public void run() {
+		while(true) {
+			sleep();
+			try {
+				Thread.sleep(33);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void sleep() {
+		if (testPanel.tempPhase < 500)
+			testPanel.tempPhase++;
+		else
+			testPanel.tempPhase = 0;
+		this.repaint();
 	}
 }
-

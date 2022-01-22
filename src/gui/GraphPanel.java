@@ -2,7 +2,7 @@ package gui;
 
 import java.awt.*;
 
-public class GraphPanel extends MyPanel {
+public class GraphPanel extends MyPanel implements Runnable {
 	double xMin;
 	double xMax;
 	double yMin;
@@ -12,7 +12,8 @@ public class GraphPanel extends MyPanel {
 	int xAxisLen;
 	int yAxisLen;
 	int gridLen;
-	
+	int tempPhase = 0;
+
 	public GraphPanel() {
 		this.setPreferredSize(new Dimension(670, 600));
 		this.xMin = 0;
@@ -24,15 +25,15 @@ public class GraphPanel extends MyPanel {
 		this.xAxisLen = 480;
 		this.yAxisLen = 250;
 		this.gridLen = 7;
-		
+
 	}
-	
+
 	public GraphPanel(double xMax, double yMax) {
 		this.xMax = xMax;
 		this.yMax = yMax;
 		setVisible(true);
 	}
-	
+
 	public GraphPanel(double xMin, double yMin, double xMax, double yMax) {
 		this.xMin = xMin;
 		this.yMin = yMin;
@@ -40,64 +41,88 @@ public class GraphPanel extends MyPanel {
 		this.yMax = yMax;
 		setVisible(true);
 	}
-	
-	public void paint(Graphics g) {
-        super.paint(g);
+
+	public void run() {
+		while (true) {
+			nextPhase();
+			try {
+				Thread.sleep(33);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+//			this.repaint();
+		}
+	}
+
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 //		setBackground(basicElements.background);
 		this.setBackground(background);
 		g.setColor(new Color(255, 255, 255));
+		drawTestGraph(g);
 		drawGrid(g, xAxisLoc, yAxisLoc, xAxisLen, yAxisLen);
-//		Graphics2D g2d = (Graphics2D)g;
-//		int width = 2;
-//		g2d.setStroke(new BasicStroke(3));
-//		g2d.drawLine(yAxisLoc, xAxisLoc, yAxisLoc, xAxisLoc - yAxisLen);
-//		g2d.drawLine(yAxisLoc, xAxisLoc, yAxisLoc + xAxisLen, xAxisLoc);
-//		
-//		for (int i = 0;i < 6;i++) {
-//			int gridLoc = xAxisLoc - ((yAxisLen * i) / 5);
-//			double tempyGrid = (yMax * i) / 5;
-//			g2d.drawLine(yAxisLoc, gridLoc, yAxisLoc + gridLen, gridLoc);
-//			g.drawString(Double.toString(tempyGrid), yAxisLoc - 40 , gridLoc + 4);
-//		}
-//		g2d.setStroke(new BasicStroke(1));
-//		g2d.setColor(new Color(200, 200, 200));
-//		for (int i = 0;i < 6;i++) {
-//			int gridLoc = xAxisLoc - ((yAxisLen * i) / 5);
-//			g2d.drawLine(yAxisLoc, gridLoc, yAxisLoc + gridLen, gridLoc);
-//			g.drawLine(yAxisLoc, gridLoc, yAxisLoc + xAxisLen, gridLoc);
-//		}
 	}
-	
+
 	public void drawGrid(Graphics g, int xAxisLoc, int yAxisLoc, int xAxisLen, int yAxisLen) {
-		Graphics2D g2d = (Graphics2D)g;
+		Graphics2D g2d = (Graphics2D) g;
 		int width = 1;
 		g2d.setStroke(new BasicStroke(width));
-		g2d.setColor(new Color(150, 150, 150));
-		for (int i = 0;i < 6;i++) {
+		g2d.setColor(BasicElements.graphScale);
+		for (int i = 0; i < 6; i++) {
 			int gridLoc = xAxisLoc - ((yAxisLen * i) / 5);
 			g2d.drawLine(yAxisLoc, gridLoc, yAxisLoc + gridLen, gridLoc);
 			g.drawLine(yAxisLoc, gridLoc, yAxisLoc + xAxisLen, gridLoc);
 		}
-		
-		g2d.setColor(letterColor);
+
+		g2d.setColor(BasicElements.graphGrid);
 		width = 3;
 		g2d.setStroke(new BasicStroke(width));
 		g2d.drawLine(yAxisLoc, xAxisLoc, yAxisLoc, xAxisLoc - yAxisLen);
 		g2d.drawLine(yAxisLoc, xAxisLoc, yAxisLoc + xAxisLen, xAxisLoc);
-		
-		for (int i = 1;i <= 5;i++) {
+
+		for (int i = 1; i <= 5; i++) {
 			int xGridLoc = xAxisLoc - ((yAxisLen * i) / 5);
 			double tempYGrid = (xMax * i) / 5;
-			g.drawString(Double.toString(tempYGrid), yAxisLoc - 40 , xGridLoc + 4);
+			g.drawString(Double.toString(tempYGrid), yAxisLoc - 40, xGridLoc + 4);
 			g2d.drawLine(yAxisLoc, xGridLoc, yAxisLoc + gridLen, xGridLoc);
 		}
-		for (int i = 0;i <= 5;i++) {
+		for (int i = 0; i <= 5; i++) {
 			int xGridLoc = yAxisLoc + ((xAxisLen * i) / 5);
 			double tempXGrid = (yMax * i) / 5;
-			g.drawString(Double.toString(tempXGrid), xGridLoc - 20 , xAxisLoc + 30);
+			g.drawString(Double.toString(tempXGrid) + "ms", xGridLoc - 20, xAxisLoc + 30);
 			g2d.drawLine(xGridLoc, xAxisLoc, xGridLoc, xAxisLoc + gridLen);
 		}
-		
-		
+	}
+
+	public void drawTestGraph(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g;
+		int[] xGraph = new int[1000];
+		int[] yGraph = new int[1000];
+		for (int i = 0; i < 300; i++) {
+			xGraph[i] = yAxisLoc + 10 * i;
+			double j = (double) (i + tempPhase) / 10;
+			yGraph[i] = xAxisLoc - 100 - (int) (50 * Math.sin(j));
+		}
+		for (int i = 0; i < 480; i++) {
+			g2d.setColor(BasicElements.graphBar);
+//			g2d.drawLine(yAxisLoc + i, (i%10/10)*yGraph[i/10] + (1-(i%10/10))*yGraph[(i+10)/10], yAxisLoc + i, xAxisLoc + 5);
+			g2d.drawLine(yAxisLoc + i, smoothGraph(i, yGraph[i / 10], yGraph[(i + 10) / 10]), yAxisLoc + i,
+					xAxisLoc - 3);
+		}
+		g2d.setColor(BasicElements.borderNorm);
+//		g2d.drawPolyline(xGraph, yGraph, xAxisLen / 10);
+	}
+
+	public int smoothGraph(int i, int a, int b) {
+		int res = (int) ((1 - ((double) i % 10 / 10)) * a + ((double) i % 10 / 10) * b);
+		return res;
+	}
+
+	public void nextPhase() {
+		if (tempPhase < 500)
+			tempPhase++;
+		else
+			tempPhase = 0;
 	}
 }

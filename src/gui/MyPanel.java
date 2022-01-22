@@ -11,6 +11,4 @@ public class MyPanel extends JPanel implements BasicElements{
 	public void setDataBase(DataBase dataBase) {
 		this.dataBase = dataBase;
 	}
-
-
 }

@@ -1,4 +1,5 @@
 package uart;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -15,7 +16,7 @@ public class Serial {
         super();
     }
 
-    public void connect(String portName) throws Exception {
+    void connect(String portName) throws Exception {
         CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
         if (portIdentifier.isCurrentlyOwned()) {
             System.out.println("Error: Port is currently in use");
@@ -32,16 +33,26 @@ public class Serial {
                 serialReader = new SerialReader(in);
                 serialWriter = new SerialWriter(out);
                 
-                
-                
-                command = new Command();
+                command = new Command(4);
                 serialReader.SetCommand(command);
                 serialWriter.SetCommand(command);
-                Thread threadReader = new Thread(serialReader);
-                Thread threadWriter = new Thread(serialWriter);
-                threadReader.start();
-                threadWriter.start();
-
+//                Thread threadReader = new Thread(serialReader);
+//                Thread threadWriter = new Thread(serialWriter);
+//                threadReader.start();
+//                threadWriter.start();
+                while(true) {
+                	serialWriter.writeCommand();
+                	serialReader.readCommand();
+                	if (command.decodeCommand() == -1) {
+                		System.out.println("return -1");
+                	}
+                	else {
+                		//DataBaseø° ¿˙¿Â
+//                		command.nextCommand();
+                		System.out.println("adcResult : " + command.adcResult);
+                	}
+                	Thread.sleep(1000);
+                }
             } else {
                 System.out.println("Error: Only serial ports are handled by this example.");
             }

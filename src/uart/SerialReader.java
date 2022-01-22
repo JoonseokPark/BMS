@@ -2,7 +2,7 @@ package uart;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class SerialReader implements Runnable {
+public class SerialReader {
     InputStream in;
     SerialWriter serialWriter;
     Command command;
@@ -14,43 +14,28 @@ public class SerialReader implements Runnable {
 	public SerialReader(InputStream in) {
         this.in = in;
     }
-
-    public void run() {
+    
+    public void readCommand() {
         byte[] buffer = new byte[1024];
-        char[] bufferChar = new char[100];
-        int len = -1;
+        int len = 0;
+        int tempLen = -1;
+        int frameByte = 8;
         int compareInt;
         
         try {
-            while ((len = this.in.read(buffer)) > -1) { 				
-            	String temp = new String(buffer, 0, len);
-            	
-            	if(len > 0)
-            		System.out.println("len : "+len);
-            	
-            	for(int i = 0;i < len;i++) {
-            		System.out.println("buffer[i] : " +(int)buffer[i]);
-            	}
-            	for(int i=0;i<len;i++) {
-            		System.out.println(ByteToStrTest.bytesToBinaryString(buffer[i]));            		
+            while (len < frameByte) {
+            	tempLen = this.in.read(buffer);
+            	if (tempLen < 0) {
+            		break;
             	}
             	
-            	if (len > 0) {
-            		for(int i = 0;i < len;i++) {
-            			if(command.input == false) {
-            				command.command = (int)buffer[i];
-            				command.input = true;
-            			}
+            	if (tempLen > 0) {
+            		for(int i = len;i < tempLen + len;++i) {
+            			command.inputBytes[i] = buffer[i - len];
             		}
             	}
-//            	try {
-//            		if(command.input == false) {
-//            			compareInt = Integer.parseInt(temp);
-//            			command.command = compareInt;            			
-//            			command.input = true;
-//            		}
-//            	} catch (NumberFormatException e) {
-//            	}            	
+            	
+            	len += tempLen;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -64,7 +49,6 @@ class ByteToStrTest {
         for (int i = 0; i < 8; i++) {
             builder.append(((0x80 >>> i) & b) == 0 ? '0' : '1');
         }
-
         return builder.toString();
     }
 }
