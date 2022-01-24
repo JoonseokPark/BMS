@@ -44,14 +44,13 @@ public class GraphPanel extends MyPanel implements Runnable {
 
 	public void run() {
 		while (true) {
-			nextPhase();
 			try {
 				Thread.sleep(33);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-//			this.repaint();
+			this.repaint();
 		}
 	}
 
@@ -60,7 +59,8 @@ public class GraphPanel extends MyPanel implements Runnable {
 //		setBackground(basicElements.background);
 		this.setBackground(background);
 		g.setColor(new Color(255, 255, 255));
-		drawTestGraph(g);
+		drawGraph(g, 0);
+//		drawTestGraph(g);
 		drawGrid(g, xAxisLoc, yAxisLoc, xAxisLen, yAxisLen);
 	}
 
@@ -100,17 +100,40 @@ public class GraphPanel extends MyPanel implements Runnable {
 		int[] xGraph = new int[1000];
 		int[] yGraph = new int[1000];
 		for (int i = 0; i < 300; i++) {
-			xGraph[i] = yAxisLoc + 10 * i;
+			xGraph[i] = yAxisLoc + 20 * i;
 			double j = (double) (i + tempPhase) / 10;
-			yGraph[i] = xAxisLoc - 100 - (int) (50 * Math.sin(j));
+			yGraph[i] = xAxisLoc - 100 - (int) (60 * Math.sin(j));
 		}
-		for (int i = 0; i < 480; i++) {
+//		for (int i = 0; i < 480; i++) {
+		for (int i = 0; i < 480; i+=2) {
 			g2d.setColor(BasicElements.graphBar);
+//			g2d.setColor(BasicElements.graphYellow);
+//			g2d.setColor(BasicElements.graphRed);
 //			g2d.drawLine(yAxisLoc + i, (i%10/10)*yGraph[i/10] + (1-(i%10/10))*yGraph[(i+10)/10], yAxisLoc + i, xAxisLoc + 5);
-			g2d.drawLine(yAxisLoc + i, smoothGraph(i, yGraph[i / 10], yGraph[(i + 10) / 10]), yAxisLoc + i,
-					xAxisLoc - 3);
+			g2d.drawLine(yAxisLoc + i, smoothGraph(i, yGraph[i / 10], yGraph[(i + 10) / 10]), yAxisLoc + i, xAxisLoc - 3);
 		}
 		g2d.setColor(BasicElements.borderNorm);
+//		g2d.drawPolyline(xGraph, yGraph, xAxisLen / 10);
+	}
+	
+	public void drawGraph(Graphics g, int index) {
+		Graphics2D g2d = (Graphics2D) g;
+		int[] xGraph = new int[100];
+		int[] yGraph = new int[100];
+		for (int i = 0; i < 100; i++) {
+			xGraph[i] = yAxisLoc + 20 * i;
+			int j = (yAxisLen * dataBase.attributes.get(index).getPercent(i)) / 100;
+			yGraph[i] = xAxisLoc - j;
+		}
+//		for (int i = 0; i < xAxisLen; i++) {
+		for (int i = 0; i < xAxisLen; i+=2) {
+			int yVal = smoothGraph(i, yGraph[i / 10], yGraph[(i + 10) / 10]);
+			g2d.setColor(getGraphCol(index, i / 10));
+//			g2d.drawLine(yAxisLoc + i, (i%10/10)*yGraph[i/10] + (1-(i%10/10))*yGraph[(i+10)/10], yAxisLoc + i, xAxisLoc + 5);
+			g2d.drawLine(yAxisLoc + xAxisLen - i, yVal, yAxisLoc + xAxisLen - i, xAxisLoc - 3);
+		}
+//		System.out.println("in drawGraph, yGraph[0] : "+ yGraph[0] + "attriutes[0] : " + dataBase.attributes.get(index).getPercent(0));
+//		g2d.setColor(BasicElements.borderNorm);
 //		g2d.drawPolyline(xGraph, yGraph, xAxisLen / 10);
 	}
 
@@ -124,5 +147,27 @@ public class GraphPanel extends MyPanel implements Runnable {
 			tempPhase++;
 		else
 			tempPhase = 0;
+	}
+	
+	
+	public Color getGraphCol(int attribute, int index) {
+		int danger = dataBase.attributes.get(attribute).getDangerLev(index);
+		if(danger == 0) {
+			return graphBar;
+		}
+		else if (danger == 1) {
+			return graphYellow;
+		}
+		else {
+			return graphRed;
+		}
+	}
+	
+	public void sleep2() {
+		if (dataBase.attributes.get(0).tempPhase < 500)
+			dataBase.attributes.get(0).tempPhase++;
+		else
+			dataBase.attributes.get(0).tempPhase = 0;
+		this.repaint();
 	}
 }

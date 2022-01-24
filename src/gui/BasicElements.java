@@ -15,7 +15,13 @@ interface BasicElements {
     public static final Color letterWatchout = new Color(255, 192, 0);
     public static final Color letterCaution = borderWatchout;
 
-    public static final Color graphBar = new Color(100, 100, 100);
+    public static final Color graphBar = new Color(200, 200, 200);
+//    public static final Color graphBar = new Color(130, 130, 130);
+//    public static final Color graphBar = new Color(129, 193, 71);
+//    public static final Color graphYellow = graphBar;
+//    public static final Color graphRed = graphBar;
+    public static final Color graphYellow = new Color(150, 90, 17);
+    public static final Color graphRed = new Color(150, 40, 40);
     public static final Color graphGrid = new Color(221, 220, 220);
     public static final Color graphScale = new Color(150, 150, 150);
 

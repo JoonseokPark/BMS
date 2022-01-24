@@ -31,10 +31,11 @@ public class GaugePanel extends MyPanel {
 //		drawGauge(g, 70);
 	}
 
-	public static void drawGaugeTest(Graphics g, int percent) {
-		int angle = (percent * 360) / 100;
+	public void drawGaugeTest(Graphics g, int percent) {
+		int angle = dataBase.attributes.get(0).getAngle();
 //		int angle = (percent * 360) / 100;
-		g.setColor(borderColor(percent));
+		drawGauge(g, 0, angle, 50, 170, 220);
+		g.setColor(borderColor(dataBase.attributes.get(0).getDangerLev()));
 		g.fillArc(50, 170, 220, 220, 90, angle);
 		g.setColor(background);
 		g.fillOval(50 + borderThick, 170 + borderThick, 220 - 2 * borderThick, 220 - 2 * borderThick);
@@ -45,16 +46,17 @@ public class GaugePanel extends MyPanel {
 
 	public void drawGauge(Graphics g, int index, int angle, int xLoc, int yLoc, int size) {
 		int percent = (angle * 100) / 360;
-		g.setColor(borderColor(percent));
+		int danger = dataBase.attributes.get(index).getDangerLev();
+		g.setColor(borderColor(danger));
 		g.fillArc(xLoc, yLoc, size, size, 90, angle);
 		g.setColor(background);
 		g.fillOval(xLoc + borderThick, yLoc + borderThick, size - 2 * borderThick, size - 2 * borderThick);
 		g.setFont(clearGothic);
-		if(percent <= 10) {
+		if(danger == 2) {
 			g.drawImage(cautionRed, xLoc + 90, yLoc + 160, this);
 			g.setColor(letterCaution);
 		}
-		else if (percent < 30) {
+		else if (danger == 1) {
 			g.drawImage(cautionYellow, xLoc + 90, yLoc + 160, this);
 			g.setColor(letterWatchout);
 		}
@@ -62,28 +64,29 @@ public class GaugePanel extends MyPanel {
 			g.setColor(letterColor);
 		}
 		g.drawString(dataBase.attributes.get(index).name, xLoc + dataBase.attributes.get(index).letterSpace, yLoc + dataBase.attributes.get(index).titleLineSpace);
+		g.drawString(dataBase.attributes.get(index).gaugeString(), xLoc + dataBase.attributes.get(index).valueSpace, yLoc + dataBase.attributes.get(index).valueLineSpace);
 	}
 	
-	public static Color borderColor(int percent) {
-		if (percent >= 30) {
+	public static Color borderColor(int lev) {
+		if (lev == 0) {
 			return borderNorm;
-		}
-		else if (percent > 10) {
+		} else if (lev == 1) {
 			return borderWatchout;
-		}
-		else {
+		} else if (lev == 2) {
 			return borderCaution;
+		} else {
+			return borderCaution;			
 		}
 	}
 	
-	public static Color letterColor(int percent) {
-		if (percent >= 30) {
+	// 안쓰는중
+	public Color letterColor(int index) {
+		int danger = dataBase.attributes.get(0).getDangerLev();
+		if (danger == 0) {
 			return letterColor;
-		}
-		else if (percent >= 10) {
+		} else if (danger == 1) {
 			return letterWatchout;
-		}
-		else {
+		} else {
 			return letterCaution;
 		}
 	}
@@ -99,5 +102,14 @@ class TestPanel extends GaugePanel implements Runnable{
 	}
 	
 	public void run() {
+		while (true) {
+			try {
+				Thread.sleep(33);
+				repaint();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }

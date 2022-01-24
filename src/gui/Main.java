@@ -7,7 +7,6 @@ public class Main {
     	DataBase dataBase = new DataBase();
     	
     	dataBase.attributes.get(0).attribute = 40;
-    	System.out.println("getAngle : " + dataBase.attributes.get(0).getAngle());
     	
         // Main Frame
         MainFrame mainFrame = new MainFrame();
@@ -17,8 +16,10 @@ public class Main {
         mainFrame.setMainPanel(mainPanel);
         mainFrame.setResizable(false);
         
-        
-        (new Thread(new TestFrame())).start();
+//        TestFrame testFrame = new TestFrame();
+//        testFrame.testPanel.setDataBase(dataBase);
+//        testFrame.testPanel2.setDataBase(dataBase);
+//        (new Thread(testFrame = new TestFrame())).start();
 //        try {
 //            (new Serial()).connect("COM11");
 //        } catch (Exception e) {
@@ -28,11 +29,11 @@ public class Main {
         while(true) {
         	try {
 				Thread.sleep(33);
+				mainFrame.repaint();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-        	mainFrame.sleep(100);
         }
     }
 }
