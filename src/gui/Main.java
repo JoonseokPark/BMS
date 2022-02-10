@@ -1,40 +1,45 @@
 package gui;
 
 import uart.*;
+import java.time.LocalTime;
+
+import java.io.File;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+
 
 public class Main {
     public static void main(String[] args) {
-    	DataBase dataBase = new DataBase();
+    	DataBase[] dataBase = new DataBase[3];
     	
-    	dataBase.attributes.get(0).attribute = 40;
+    	for (int i = 0;i < 3;i++) {
+    		dataBase[i] = new DataBase();
+    	}
     	
-        // Main Frame
-        MainFrame mainFrame = new MainFrame();
-        MainPanel mainPanel = new MainPanel();
-        mainPanel.setPanel();
-        mainPanel.setDataBase(dataBase);
-        mainFrame.setMainPanel(mainPanel);
-        mainFrame.setResizable(false);
-        
-//        TestFrame testFrame = new TestFrame();
-//        testFrame.testPanel.setDataBase(dataBase);
-//        testFrame.testPanel2.setDataBase(dataBase);
-//        (new Thread(testFrame = new TestFrame())).start();
-//        try {
-//            (new Serial()).connect("COM11");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-        
-        while(true) {
-        	try {
-				Thread.sleep(33);
-				mainFrame.repaint();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+    	MainFrame mainFrame = new MainFrame(dataBase);
+        for(int i = 0;i < 3;i++) {
+        	mainFrame.setMainPanel(i, dataBase[i]);
         }
+        
+        (new Thread(mainFrame)).start();
+        
+//        HistoryFrame hp = new HistoryFrame(dataBase[0], 3);
+//        for (int i = 0;i < 100;i++) {
+//        	abc();
+//        }
+
+        try {
+        	Serial serial = new Serial();
+        	serial.setDataBase(dataBase);
+            (serial).connect("COM17");
+            System.out.println("in main.java, Success");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
     }
 }
 

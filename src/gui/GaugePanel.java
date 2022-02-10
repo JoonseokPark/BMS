@@ -6,47 +6,35 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.io.File;
 
-public class GaugePanel extends MyPanel {
-	int xLoc = 50;
-	int yLoc = 170;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 
+public class GaugePanel extends MyPanel implements Runnable{
 	public GaugePanel() {
-		this.setPreferredSize(new Dimension(350, 600));
+		this.setPreferredSize(new Dimension(350, 330));
 	}
-
-	public GaugePanel(int num, int attribute) {
-		if (num == 3) {
-			this.setPreferredSize(new Dimension(350, 700));
-		}
-		else if (num == 4) {
-			this.setPreferredSize(new Dimension(450, 600));
-		}
+	
+	public GaugePanel(int attIndex) {
+		this.attIndex = attIndex;
 	}
 
 	public void paint(Graphics g) {
 		super.paint(g);
 		setBackground(background);
-//		g.setColor(borderNorm);
-//		drawGauge(g, 70);
+		drawGauge(g, attIndex, dataBase.attributes.get(attIndex).getAngle(), 50, 70, 220);
 	}
 
-	public void drawGaugeTest(Graphics g, int percent) {
-		int angle = dataBase.attributes.get(0).getAngle();
-//		int angle = (percent * 360) / 100;
-		drawGauge(g, 0, angle, 50, 170, 220);
-		g.setColor(borderColor(dataBase.attributes.get(0).getDangerLev()));
-		g.fillArc(50, 170, 220, 220, 90, angle);
-		g.setColor(background);
-		g.fillOval(50 + borderThick, 170 + borderThick, 220 - 2 * borderThick, 220 - 2 * borderThick);
-		g.setFont(new Font("franklin gothic book", Font.PLAIN, 45));
-		g.setColor(letterColor);
-		g.drawString("test", 120, 280);
-	}
 
-	public void drawGauge(Graphics g, int index, int angle, int xLoc, int yLoc, int size) {
-		int percent = (angle * 100) / 360;
-		int danger = dataBase.attributes.get(index).getDangerLev();
+	public void drawGauge(Graphics g, int attIndex, int angle, int xLoc, int yLoc, int size) {
+		if(angle == 100) {
+			buzzer();
+		}
+		int danger = dataBase.attributes.get(attIndex).getDangerLev();
 		g.setColor(borderColor(danger));
 		g.fillArc(xLoc, yLoc, size, size, 90, angle);
 		g.setColor(background);
@@ -55,6 +43,7 @@ public class GaugePanel extends MyPanel {
 		if(danger == 2) {
 			g.drawImage(cautionRed, xLoc + 90, yLoc + 160, this);
 			g.setColor(letterCaution);
+			
 		}
 		else if (danger == 1) {
 			g.drawImage(cautionYellow, xLoc + 90, yLoc + 160, this);
@@ -63,8 +52,8 @@ public class GaugePanel extends MyPanel {
 		else {
 			g.setColor(letterColor);
 		}
-		g.drawString(dataBase.attributes.get(index).name, xLoc + dataBase.attributes.get(index).letterSpace, yLoc + dataBase.attributes.get(index).titleLineSpace);
-		g.drawString(dataBase.attributes.get(index).gaugeString(), xLoc + dataBase.attributes.get(index).valueSpace, yLoc + dataBase.attributes.get(index).valueLineSpace);
+		g.drawString(dataBase.attributes.get(attIndex).title, xLoc + dataBase.attributes.get(attIndex).letterSpace, yLoc + dataBase.attributes.get(attIndex).titleLineSpace);
+		g.drawString(dataBase.attributes.get(attIndex).gaugeString(), xLoc + dataBase.attributes.get(attIndex).valueSpace, yLoc + dataBase.attributes.get(attIndex).valueLineSpace);
 	}
 	
 	public static Color borderColor(int lev) {
@@ -80,8 +69,8 @@ public class GaugePanel extends MyPanel {
 	}
 	
 	// 안쓰는중
-	public Color letterColor(int index) {
-		int danger = dataBase.attributes.get(0).getDangerLev();
+	public Color letterColor(int attIndex) {
+		int danger = dataBase.attributes.get(attIndex).getDangerLev();
 		if (danger == 0) {
 			return letterColor;
 		} else if (danger == 1) {
@@ -90,16 +79,31 @@ public class GaugePanel extends MyPanel {
 			return letterCaution;
 		}
 	}
-}
-
-class TestPanel extends GaugePanel implements Runnable{
-	public void paint(Graphics g) {
-		super.paint(g);
-		setBackground(background);
-//		this.setBackground(basicElements.background);
-		g.setColor(borderNorm);
-		drawGaugeTest(g, 70);
-	}
+	
+	
+    public void buzzer() {
+        File bgm;
+        AudioInputStream stream;
+        AudioFormat format;
+        DataLine.Info info;
+        
+        bgm = new File("C:\\Users\\JSPARK\\eclipse-workspace_Java\\BMS\\sound\\beep-01a.wav"); // 사용시에는 개별 폴더로 변경할 것
+        
+        Clip clip;
+        
+        try {
+               stream = AudioSystem.getAudioInputStream(bgm);
+               format = stream.getFormat();
+               info = new DataLine.Info(Clip.class, format);
+               clip = (Clip)AudioSystem.getLine(info);
+               clip.open(stream);
+               clip.start();
+               
+        } catch (Exception e) {
+               System.out.println("err : " + e);
+        }
+        
+    }
 	
 	public void run() {
 		while (true) {

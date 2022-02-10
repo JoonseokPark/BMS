@@ -1,8 +1,10 @@
 package gui;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class GraphPanel extends MyPanel implements Runnable {
+public class GraphPanel extends MyPanel implements Runnable{
 	double xMin;
 	double xMax;
 	double yMin;
@@ -12,20 +14,26 @@ public class GraphPanel extends MyPanel implements Runnable {
 	int xAxisLen;
 	int yAxisLen;
 	int gridLen;
-	int tempPhase = 0;
+	
+	RoundedButton hisBt;
 
-	public GraphPanel() {
-		this.setPreferredSize(new Dimension(670, 600));
+	public GraphPanel(int attIndex, double xMax, double yMax) {
+		this.setPreferredSize(new Dimension(1000, 360));
 		this.xMin = 0;
-		this.xMax = 100;
-		this.yMin = 0;
-		this.yMax = 250;
-		this.xAxisLoc = 450;
+		this.xMax = xMax;
+		this.yMin = -20;
+		this.yMax = yMax;
+		this.xAxisLoc = 450 + 150;
 		this.yAxisLoc = 70;
-		this.xAxisLen = 480;
-		this.yAxisLen = 250;
+		this.xAxisLen = 700;
+		this.yAxisLen = 240;
 		this.gridLen = 7;
-
+		this.attIndex = attIndex;
+		this.setLayout(null);
+		hisBt = new RoundedButton("History");
+		hisBt.addActionListener(new ButtonListener());
+		this.add(hisBt);
+		hisBt.setBounds(400, 10, 60, 30);
 	}
 
 	public GraphPanel(double xMax, double yMax) {
@@ -59,9 +67,8 @@ public class GraphPanel extends MyPanel implements Runnable {
 //		setBackground(basicElements.background);
 		this.setBackground(background);
 		g.setColor(new Color(255, 255, 255));
-		drawGraph(g, 0);
-//		drawTestGraph(g);
-		drawGrid(g, xAxisLoc, yAxisLoc, xAxisLen, yAxisLen);
+		drawGraph(g, attIndex, 285, yAxisLoc);
+		drawGrid(g, 285, yAxisLoc, xAxisLen, yAxisLen);
 	}
 
 	public void drawGrid(Graphics g, int xAxisLoc, int yAxisLoc, int xAxisLen, int yAxisLen) {
@@ -81,77 +88,49 @@ public class GraphPanel extends MyPanel implements Runnable {
 		g2d.drawLine(yAxisLoc, xAxisLoc, yAxisLoc, xAxisLoc - yAxisLen);
 		g2d.drawLine(yAxisLoc, xAxisLoc, yAxisLoc + xAxisLen, xAxisLoc);
 
-		for (int i = 1; i <= 5; i++) {
+		for (int i = 0; i <= 5; i++) {
 			int xGridLoc = xAxisLoc - ((yAxisLen * i) / 5);
-			double tempYGrid = (xMax * i) / 5;
-			g.drawString(Double.toString(tempYGrid), yAxisLoc - 40, xGridLoc + 4);
+			double tempYGrid = (dataBase.attributes.get(attIndex).yMax - dataBase.attributes.get(attIndex).yMin) * i / 5;
+			tempYGrid += dataBase.attributes.get(attIndex).yMin;
+			if(attIndex == 0 || attIndex == 1) {
+				g.drawString(String.format("%.0f", tempYGrid) + dataBase.attributes.get(attIndex).unit, yAxisLoc - 40, xGridLoc + 4);
+			} else if(attIndex == 2 || attIndex == 4) {
+				g.drawString(String.format("%.0f", tempYGrid) + dataBase.attributes.get(attIndex).unit, yAxisLoc - 60, xGridLoc + 4);
+			}
+			else {
+				g.drawString(String.format("%.2f", tempYGrid) + dataBase.attributes.get(attIndex).unit, yAxisLoc - 40, xGridLoc + 4);
+			}
 			g2d.drawLine(yAxisLoc, xGridLoc, yAxisLoc + gridLen, xGridLoc);
 		}
 		for (int i = 0; i <= 5; i++) {
 			int xGridLoc = yAxisLoc + ((xAxisLen * i) / 5);
-			double tempXGrid = (yMax * i) / 5;
-			g.drawString(Double.toString(tempXGrid) + "ms", xGridLoc - 20, xAxisLoc + 30);
+			double tempXGrid = (xMax * i) / 5;
+			g.drawString(String.format("%.0fms", tempXGrid), xGridLoc - 20, xAxisLoc + 30);
 			g2d.drawLine(xGridLoc, xAxisLoc, xGridLoc, xAxisLoc + gridLen);
 		}
 	}
-
-	public void drawTestGraph(Graphics g) {
-		Graphics2D g2d = (Graphics2D) g;
-		int[] xGraph = new int[1000];
-		int[] yGraph = new int[1000];
-		for (int i = 0; i < 300; i++) {
-			xGraph[i] = yAxisLoc + 20 * i;
-			double j = (double) (i + tempPhase) / 10;
-			yGraph[i] = xAxisLoc - 100 - (int) (60 * Math.sin(j));
-		}
-//		for (int i = 0; i < 480; i++) {
-		for (int i = 0; i < 480; i+=2) {
-			g2d.setColor(BasicElements.graphBar);
-//			g2d.setColor(BasicElements.graphYellow);
-//			g2d.setColor(BasicElements.graphRed);
-//			g2d.drawLine(yAxisLoc + i, (i%10/10)*yGraph[i/10] + (1-(i%10/10))*yGraph[(i+10)/10], yAxisLoc + i, xAxisLoc + 5);
-			g2d.drawLine(yAxisLoc + i, smoothGraph(i, yGraph[i / 10], yGraph[(i + 10) / 10]), yAxisLoc + i, xAxisLoc - 3);
-		}
-		g2d.setColor(BasicElements.borderNorm);
-//		g2d.drawPolyline(xGraph, yGraph, xAxisLen / 10);
-	}
 	
-	public void drawGraph(Graphics g, int index) {
+	public void drawGraph(Graphics g, int index, int xAxisLoc, int yAxisLoc) {
 		Graphics2D g2d = (Graphics2D) g;
-		int[] xGraph = new int[100];
 		int[] yGraph = new int[100];
 		for (int i = 0; i < 100; i++) {
-			xGraph[i] = yAxisLoc + 20 * i;
 			int j = (yAxisLen * dataBase.attributes.get(index).getPercent(i)) / 100;
 			yGraph[i] = xAxisLoc - j;
 		}
-//		for (int i = 0; i < xAxisLen; i++) {
 		for (int i = 0; i < xAxisLen; i+=2) {
 			int yVal = smoothGraph(i, yGraph[i / 10], yGraph[(i + 10) / 10]);
 			g2d.setColor(getGraphCol(index, i / 10));
-//			g2d.drawLine(yAxisLoc + i, (i%10/10)*yGraph[i/10] + (1-(i%10/10))*yGraph[(i+10)/10], yAxisLoc + i, xAxisLoc + 5);
-			g2d.drawLine(yAxisLoc + xAxisLen - i, yVal, yAxisLoc + xAxisLen - i, xAxisLoc - 3);
+			g2d.drawLine(yAxisLoc + i, yVal, yAxisLoc + i, xAxisLoc - 3);
 		}
-//		System.out.println("in drawGraph, yGraph[0] : "+ yGraph[0] + "attriutes[0] : " + dataBase.attributes.get(index).getPercent(0));
-//		g2d.setColor(BasicElements.borderNorm);
-//		g2d.drawPolyline(xGraph, yGraph, xAxisLen / 10);
 	}
 
 	public int smoothGraph(int i, int a, int b) {
 		int res = (int) ((1 - ((double) i % 10 / 10)) * a + ((double) i % 10 / 10) * b);
 		return res;
 	}
-
-	public void nextPhase() {
-		if (tempPhase < 500)
-			tempPhase++;
-		else
-			tempPhase = 0;
-	}
-	
 	
 	public Color getGraphCol(int attribute, int index) {
-		int danger = dataBase.attributes.get(attribute).getDangerLev(index);
+		int danger = dataBase.attributes.get(attribute).getDangerLev(0, index);
 		if(danger == 0) {
 			return graphBar;
 		}
@@ -163,11 +142,10 @@ public class GraphPanel extends MyPanel implements Runnable {
 		}
 	}
 	
-	public void sleep2() {
-		if (dataBase.attributes.get(0).tempPhase < 500)
-			dataBase.attributes.get(0).tempPhase++;
-		else
-			dataBase.attributes.get(0).tempPhase = 0;
-		this.repaint();
-	}
+	class ButtonListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			HistoryFrame hp = new HistoryFrame(dataBase, attIndex);
+		}
+	}	
 }
